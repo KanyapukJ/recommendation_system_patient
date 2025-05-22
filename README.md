@@ -53,7 +53,7 @@ First, ensure your data files are properly set up:
 
 2. Place your Excel file with symptom data in the assets folder as `dataset.xlsx`:
    ```bash
-   cp /path/to/your/excel/file.xlsx assets/dataset.xlsx
+   cp "/path/to/your/excel/file.xlsx" assets/dataset.xlsx
    ```
 
 3. Run the preprocessing script to ensure data is properly formatted (this will generate the `symptoms.csv` file from your `dataset.xlsx`):
