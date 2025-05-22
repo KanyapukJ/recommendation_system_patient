@@ -126,19 +126,18 @@ def main():
         excel_path = args.file
         print(f"Using specified file path: {excel_path}")
     else:
-        excel_path = os.path.join(current_dir, "assets", "[CONFIDENTIAL] AI symptom picker data (Agnos candidate assignment).xlsx")
+        excel_path = os.path.join(current_dir, "assets", "dataset.xlsx")
         print(f"Using default file path: {excel_path}")
         
         # If default file doesn't exist, try parent directory
         if not os.path.exists(excel_path):
-            parent_excel_path = os.path.join(os.path.dirname(current_dir), 
-                                            "[CONFIDENTIAL] AI symptom picker data (Agnos candidate assignment).xlsx")
+            parent_excel_path = os.path.join(os.path.dirname(current_dir), "dataset.xlsx")
             if os.path.exists(parent_excel_path):
                 print(f"Default file not found, using parent directory file: {parent_excel_path}")
                 excel_path = parent_excel_path
     
     # Define output CSV path in the assets directory
-    csv_output_path = os.path.join(current_dir, "assets", "คำแนะนำเฉพาะทาง_56อาการ_อัปเดตใหม่.csv")
+    csv_output_path = os.path.join(current_dir, "assets", "symptoms.csv")
     
     # Check if Excel file exists
     if not os.path.exists(excel_path):

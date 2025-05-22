@@ -8,19 +8,26 @@ A Streamlit-based web application that helps medical professionals select sympto
 - Categorized follow-up questions organized by type (duration, severity, location, etc.)
 - Customized medical recommendations for each symptom
 - Previous treatment history integration
-- Symptom relationship analysis with visualizations
-- Co-occurrence detection between different symptoms
 - Easy-to-use web interface built with Streamlit
 
 ## 🔧 Installation
 
+### Getting Started
+
+1. Clone the repository and navigate to the project directory:
+```bash
+git clone https://github.com/KanyapukJ/recommendation_system_patient.git
+cd recommendation_system_patient
+```
+
 ### Prerequisites
 
-- Python 3.8 or higher
-- Excel file with symptom data in the specified format
-- CSV file with recommendations (will be auto-generated if not present)
+- Python 3.9 or higher
+- **MANDATORY**: `assets` folder in the project root directory
+- **MANDATORY**: Excel file with symptom data named `dataset.xlsx` (must be placed in the `assets` folder)
+- **MANDATORY**: CSV file with recommendations named `symptoms.csv` (will be auto-generated in the `assets` folder by running `python preprocess.py --file "assets/dataset.xlsx"`)
 
-### Method 1: Using Conda (Recommended)
+### Using Conda (Recommended)
 
 1. Create a new Conda environment:
 ```bash
@@ -37,34 +44,41 @@ conda activate symptom-rec
 pip install -r requirements.txt
 ```
 
-### Method 2: Using Pip
-
-1. Install required packages:
-```bash
-pip install -r requirements.txt
-```
-
 ## 🚀 Usage
 
 ### 1. Data Preprocessing
 
-First, run the preprocessing script to ensure data is properly formatted:
+First, ensure your data files are properly set up:
+
+1. Make sure you have an `assets` folder in the root directory of the project
+   ```bash
+   mkdir -p assets
+   ```
+
+2. Place your Excel file with symptom data in the assets folder as `dataset.xlsx`:
+   ```bash
+   cp /path/to/your/excel/file.xlsx assets/dataset.xlsx
+   ```
+
+3. Run the preprocessing script to ensure data is properly formatted (this will generate the `symptoms.csv` file from your `dataset.xlsx`):
+   ```bash
+   python preprocess.py --file "assets/dataset.xlsx"
+   ```
+#### Using a Custom Excel File
+
+If you want to use your own Excel file, simply provide its path with the `--file` argument when running the preprocessing script:
 
 ```bash
-cd /path/to/recommendation_system_patient
-python preprocess.py
+python preprocess.py --file "/path/to/your/custom/excel/file.xlsx"
 ```
 
-You can also specify a custom Excel file path using the `--file` argument:
-
-```bash
-python preprocess.py --file "/path/to/your/excel/file.xlsx"
-```
+You must copy and rename your file to `assets/dataset.xlsx` 
 
 Important notes:
 - Use quotes around the file path if it contains special characters (like spaces or square brackets)
-- By default, the script looks for the Excel file in the `assets` directory
+- By default, the script looks for `dataset.xlsx` in the `assets` directory
 - If the default file is not found, it will check the parent directory
+- The output will be saved as `symptoms.csv` in the `assets` directory
 
 This script:
 - Extracts unique symptoms from the Excel file
@@ -81,27 +95,16 @@ streamlit run app.py
 
 A web browser will automatically open with the application running at http://localhost:8501.
 
-### 3. Using the Symptom Analyzer
-
-The application includes a symptom relationship analysis feature that helps identify patterns in symptom co-occurrences:
-
-1. Navigate to the symptom analysis section at the bottom of the application
-2. Click "วิเคราะห์ข้อมูลอาการ" (Analyze Symptom Data) to generate visualizations
-3. View the network graph showing how different symptoms relate to each other
-4. Check the correlation table for detailed information on symptom co-occurrences
-
-The analysis helps medical professionals identify potential symptom clusters that commonly appear together in patients.
-
 ## 📊 Project Structure
 
 ```
 recommendation_system_patient/
 ├── app.py                 # Main Streamlit web application
 ├── data_processor.py      # Data processing functions module
-├── symptom_analyzer.py    # Symptom relationship analysis module
 ├── preprocess.py          # Data preprocessing script
 ├── requirements.txt       # List of dependencies
-├── assets/                # Data files folder
+├── assets/                # MANDATORY: Data files folder
+│   └── dataset.xlsx       # MANDATORY: Default input file with symptom data
 └── README.md              # This documentation
 ```
 
@@ -118,9 +121,20 @@ You can customize the data sources in two ways:
 
 ### Method 2: Direct File Replacement
 
-Replace the files in the `assets` folder:
-- Excel file: Contains patient symptom data with structured JSON responses
-- CSV file: Contains symptom-specific medical recommendations
+Replace the files in the `assets` folder (make sure to keep the exact filenames):
+- `dataset.xlsx`: Contains patient symptom data with structured JSON responses
+- `symptoms.csv`: Contains symptom-specific medical recommendations
+
+## 📑 Dataset Structure
+
+The `dataset.xlsx` file should have the following structure:
+
+- Contains columns including at least `summary` which stores JSON data
+- The JSON in the `summary` column has a `yes_symptoms` array containing:
+  - `text`: The symptom name (e.g., "มีไข้", "ปวดหัว")
+  - `answers`: Patient responses to follow-up questions about the symptom
+- Other recommended columns: `search_term`, patient demographic information
+- Each row represents a patient encounter or symptom report
 
 ## ⚠️ Medical Disclaimer
 

@@ -9,15 +9,6 @@ from data_processor import (
     get_treatment_answers,
     group_answers
 )
-import matplotlib.pyplot as plt
-import networkx as nx
-import pandas as pd
-# Check if symptom_analyzer module exists
-try:
-    from symptom_analyzer import analyze_symptoms
-    HAS_ANALYZER = True
-except ImportError:
-    HAS_ANALYZER = False
 
 # Set page configuration
 st.set_page_config(
@@ -68,8 +59,8 @@ def get_default_paths():
     current_dir = os.path.dirname(os.path.abspath(__file__))
     
     # Define paths to the data files
-    excel_path = os.path.join(current_dir, "assets", "[CONFIDENTIAL] AI symptom picker data (Agnos candidate assignment).xlsx")
-    csv_path = os.path.join(current_dir, "assets", "คำแนะนำเฉพาะทาง_56อาการ_อัปเดตใหม่.csv")
+    excel_path = os.path.join(current_dir, "assets", "dataset.xlsx")
+    csv_path = os.path.join(current_dir, "assets", "symptoms.csv")
     
     # Ensure the assets directory exists
     assets_dir = os.path.join(current_dir, "assets")
@@ -130,17 +121,8 @@ def main():
             excel_path = st.text_input("ที่อยู่ไฟล์ Excel ข้อมูลอาการ", value=default_excel_path)
             recommendations_path = st.text_input("ที่อยู่ไฟล์ CSV คำแนะนำ", value=default_csv_path)
         
-        # Create analysis_output directory if not exists
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        analysis_output = os.path.join(current_dir, "analysis_output")
-        os.makedirs(analysis_output, exist_ok=True)
-        
         # Navigation
         st.header("เมนู")
-        app_mode = st.radio(
-            "เลือกโหมดการใช้งาน:",
-            ["อาการและคำแนะนำ", "วิเคราะห์ความสัมพันธ์อาการ"]
-        )
         
         if st.button("โหลดข้อมูลใหม่"):
             st.cache_data.clear()
@@ -154,11 +136,8 @@ def main():
         symptoms = extract_all_symptoms(df)
         treatment_answers = get_treatment_answers(df)
         
-        # Different app modes
-        if app_mode == "อาการและคำแนะนำ":
-            display_recommendation_interface(df, symptoms, treatment_answers, recommendations_dict)
-        else:  # Symptom analysis mode
-            display_symptom_analysis(df, excel_path, symptoms)
+        # Display recommendation interface
+        display_recommendation_interface(df, symptoms, treatment_answers, recommendations_dict)
             
     except Exception as e:
         st.error(f"เกิดข้อผิดพลาดในการโหลดข้อมูล: {e}")
@@ -223,87 +202,9 @@ def display_recommendation_interface(df, symptoms, treatment_answers, recommenda
                 """, 
                 unsafe_allow_html=True
             )
-            
-            # Display related symptoms if available
-            try:
-                related_symptoms_path = os.path.join("analysis_output", "symptom_relations.csv")
-                if os.path.exists(related_symptoms_path):
-                    related_df = pd.read_csv(related_symptoms_path)
-                    if not related_df.empty:
-                        symptom_row = related_df[related_df["อาการ"] == selected_symptom]
-                        if not symptom_row.empty:
-                            related_str = symptom_row.iloc[0]["อาการที่เกี่ยวข้อง"]
-                            st.markdown("### 🔗 อาการที่มักพบร่วมกัน")
-                            st.markdown(related_str)
-            except Exception as e:
-                # Silently handle errors reading related symptoms
-                pass
                 
         else:
             st.warning(f"ไม่พบข้อมูลเพิ่มเติมสำหรับอาการ '{selected_symptom}'")
-
-def display_symptom_analysis(df, excel_path, symptoms):
-    """Display symptom relationship analysis"""
-    st.markdown("## 📊 วิเคราะห์ความสัมพันธ์ระหว่างอาการ")
-    
-    if not HAS_ANALYZER:
-        st.error("ไม่พบโมดูล symptom_analyzer โปรดติดตั้งก่อนใช้งานส่วนนี้")
-        return
-    
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    analysis_output = os.path.join(current_dir, "analysis_output")
-    
-    # Check if analysis has been run
-    network_image = os.path.join(analysis_output, "symptom_network.png")
-    relations_csv = os.path.join(analysis_output, "symptom_relations.csv")
-    
-    col1, col2 = st.columns([1, 3])
-    
-    with col1:
-        if st.button("วิเคราะห์ข้อมูลอาการ", type="primary"):
-            with st.spinner("กำลังวิเคราะห์ข้อมูล..."):
-                try:
-                    # Run symptom analysis
-                    analyze_symptoms(excel_path, analysis_output)
-                    st.success("วิเคราะห์ข้อมูลเสร็จสิ้น!")
-                    st.experimental_rerun()  # Refresh to show results
-                except Exception as e:
-                    st.error(f"เกิดข้อผิดพลาดในการวิเคราะห์: {e}")
-    
-    with col2:
-        st.markdown("""
-        ระบบจะวิเคราะห์ความสัมพันธ์ระหว่างอาการต่างๆ จากข้อมูลผู้ป่วย โดย:
-        - หาอาการที่มักพบร่วมกันบ่อย
-        - สร้างแผนภาพความสัมพันธ์ (Network graph)
-        - คำนวณความใกล้เคียงของอาการจากคำตอบที่เกี่ยวข้อง
-        """)
-    
-    # Display results if available
-    if os.path.exists(network_image) and os.path.exists(relations_csv):
-        # Display network graph
-        st.markdown("### แผนภาพความสัมพันธ์ระหว่างอาการ")
-        st.markdown("ขนาดของวงกลม = ความถี่ของอาการ, ความหนาของเส้น = ความสัมพันธ์")
-        st.image(network_image)
-        
-        # Display relations table
-        st.markdown("### ตารางอาการที่สัมพันธ์กัน")
-        
-        try:
-            relations_df = pd.read_csv(relations_csv)
-            
-            # Add search functionality
-            search_symptom = st.selectbox("ค้นหาอาการ:", options=[""] + symptoms.copy())
-            
-            if search_symptom:
-                filtered_df = relations_df[relations_df["อาการ"] == search_symptom]
-                st.dataframe(filtered_df, use_container_width=True)
-            else:
-                st.dataframe(relations_df, use_container_width=True)
-                
-        except Exception as e:
-            st.error(f"ไม่สามารถแสดงข้อมูลความสัมพันธ์: {e}")
-    else:
-        st.info("ยังไม่มีผลการวิเคราะห์ กรุณากดปุ่ม 'วิเคราะห์ข้อมูลอาการ' เพื่อเริ่มการวิเคราะห์")
 
 if __name__ == "__main__":
     main()
