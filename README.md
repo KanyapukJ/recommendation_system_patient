@@ -29,17 +29,13 @@ cd recommendation_system_patient
 
 ### Using Conda (Recommended)
 
-1. Create a new Conda environment:
+1. Create and activatea a Conda environment (recommended):
 ```bash
-conda create -n symptom-rec python=3.9
-```
-
-2. Activate the environment:
-```bash
+conda create -n symptom-rec python=3.9 -y
 conda activate symptom-rec
 ```
 
-3. Install required packages:
+2. Install required packages:
 ```bash
 pip install -r requirements.txt
 ```
